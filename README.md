@@ -59,11 +59,12 @@ This repository provides Mbed OS 6 support for board with [STM32F401CCU6](https:
 
 After base mbed project creation and configuration perform the following configuration to setup board:
 
-1. Add this library to your project with `mbed add` command.
-2. Copy `custom_target.json` from library folder to your project folder.
-3. Run `mbed target BLACKPILL_F401CC` command to set default board.
-4. Run `mbed toolchain GCC_ARM` to set default toolchain.
-5. Run `mbed export ...` command if you use IDE, as new files have been added to you project.
+1. Go to project root directory.
+2. Run `mbed add https://github.com/vznncv/TARGET_BLACKPILL_F401CC.git` to add this library to your project.
+3. Copy `custom_target.json` from library folder to your project folder.
+4. Run `mbed target BLACKPILL_F401CC` command to set default board.
+5. Run `mbed toolchain GCC_ARM` to set default toolchain.
+6. Run `mbed export ...` command if you use IDE, as new files have been added to you project.
 
 note: currently only GCC ARM toolchain is supported.
 
