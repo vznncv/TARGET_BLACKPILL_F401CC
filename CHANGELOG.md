@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add github CI/CD to test project compilation with custom target.
+
 ### Fixed
 
 - Add `.gitignore` to ignore IDE specific files
