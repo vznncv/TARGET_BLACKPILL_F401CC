@@ -43,21 +43,20 @@ This repository provides Mbed OS 6 support for board with [STM32F401CCU6](https:
 
 ### Default pins
 
-| description | pin |
-|---|---|
+| description | pin | note |
+|---|---|---|
 | STDIO_UART_TX | PA_2 |
 | STDIO_UART_RX | PA_3 |
 | led pin (LED1 alias) | PC_13 |
+| user button pin (BUTTON1 alias) | PA_0 | it may absent on some board revisions. If it presents, `PullUp` mode should be used  |
+
 
 ### Mbed OS version support
 
 | Mbed OS | status |
 |---|---|
-| 6.5 | Compiles and runs ok |
-| 6.6 | Compiles and runs ok, but you need to press reset button (NRST) during firmware uploading. This bug is caused by the pull request [#13777](https://github.com/ARMmbed/mbed-os/pull/13777), but fixed in the [#14032](https://github.com/ARMmbed/mbed-os/pull/14032). |
-| 6.7 | Compiles and runs ok |
-| 6.8 | Compiles and runs ok |
-| 6.9 | Compiles and runs ok |
+| 6.12 | Compiles and runs ok |
+| 6.13 | Compiles and runs ok |
 
 ## Project configuration
 

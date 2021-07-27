@@ -1,57 +1,58 @@
-/**
- * System clock configuration.
+/* mbed Microcontroller Library
+ * SPDX-License-Identifier: BSD-3-Clause
+ ******************************************************************************
  *
- * This code is based on the MBED file:
- * mbed-os/targets/TARGET_STM/TARGET_STM32F4/TARGET_STM32F401xE/TARGET_NUCLEO_F401RE/system_clock.c
+ * Copyright (c) 2015-2021 STMicroelectronics.
+ * All rights reserved.
  *
- * mbed Microcontroller Library
- * Copyright (c) 2006-2017 ARM Limited
+ * This software component is licensed by ST under BSD 3-Clause license,
+ * the "License"; You may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at:
+ *                        opensource.org/licenses/BSD-3-Clause
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ ******************************************************************************
  */
 
 /**
   * This file configures the system clock as follows:
-  *-----------------------------------------------------------------------------
-  * System clock source | 1- USE_PLL_HSE_EXTC (external 8 MHz clock)
-  *                     | 2- USE_PLL_HSE_XTAL (external 8 MHz xtal)
-  *                     | 3- USE_PLL_HSI (internal 16 MHz)
-  *-----------------------------------------------------------------------------
-  * SYSCLK(MHz)         | 84
-  * AHBCLK (MHz)        | 84
-  * APB1CLK (MHz)       | 42
-  * APB2CLK (MHz)       | 84
-  * USB capable         | YES
-  *-----------------------------------------------------------------------------
+  *----------------------------------------------------------------------
+  * System clock source | 1- USE_PLL_HSE_EXTC (external 25/8 MHz clock) |
+  *                     | 2- USE_PLL_HSE_XTAL (external 25/8 MHz xtal)  |
+  *                     | 3- USE_PLL_HSI (internal 16 MHz)              |
+  *----------------------------------------------------------------------
+  * SYSCLK(MHz)         | 84                                            |
+  * AHBCLK (MHz)        | 84                                            |
+  * APB1CLK (MHz)       | 42                                            |
+  * APB2CLK (MHz)       | 84                                            |
+  * USB capable         | YES                                           |
+  *----------------------------------------------------------------------
+  *
+  * HSE values is defined by HSE_VALUE macros.
 **/
 
-#include "mbed_error.h"
 #include "stm32f4xx.h"
+#include "mbed_error.h"
 
 // clock source is selected with CLOCK_SOURCE in json config
-#define USE_PLL_HSE_EXTC 0x8 // Use external clock (ST Link MCO)
-#define USE_PLL_HSE_XTAL 0x4 // Use external xtal (X3 on board - not provided by default)
-#define USE_PLL_HSI 0x2 // Use HSI internal clock
+#define USE_PLL_HSE_EXTC     0x8  // Use external clock (ST Link MCO)
+#define USE_PLL_HSE_XTAL     0x4  // Use external xtal (X3 on board - not provided by default)
+#define USE_PLL_HSI          0x2  // Use HSI internal clock
 
-#if (((CLOCK_SOURCE)&USE_PLL_HSE_XTAL) || ((CLOCK_SOURCE)&USE_PLL_HSE_EXTC))
+// assume that we have 25 MHz external oscillator by default
+#ifndef HSE_VALUE
+#define HSE_VALUE 25000000
+#endif
+
+#if ( ((CLOCK_SOURCE) & USE_PLL_HSE_XTAL) || ((CLOCK_SOURCE) & USE_PLL_HSE_EXTC) )
 uint8_t SetSysClock_PLL_HSE(uint8_t bypass);
 #endif /* ((CLOCK_SOURCE) & USE_PLL_HSE_XTAL) || ((CLOCK_SOURCE) & USE_PLL_HSE_EXTC) */
 
-#if ((CLOCK_SOURCE)&USE_PLL_HSI)
+#if ((CLOCK_SOURCE) & USE_PLL_HSI)
 uint8_t SetSysClock_PLL_HSI(void);
 #endif /* ((CLOCK_SOURCE) & USE_PLL_HSI) */
 
-/*
+
+/**
  * @brief  Configures the System clock source, PLL Multiplier and Divider factors,
  *               AHB/APBx prescalers and Flash settings
  * @note   This function should be called only once the RCC clock configuration
@@ -59,20 +60,19 @@ uint8_t SetSysClock_PLL_HSI(void);
  * @param  None
  * @retval None
  */
-
 void SetSysClock(void)
 {
-#if ((CLOCK_SOURCE)&USE_PLL_HSE_EXTC)
+#if ((CLOCK_SOURCE) & USE_PLL_HSE_EXTC)
     /* 1- Try to start with HSE and external clock */
     if (SetSysClock_PLL_HSE(1) == 0)
 #endif
     {
-#if ((CLOCK_SOURCE)&USE_PLL_HSE_XTAL)
+#if ((CLOCK_SOURCE) & USE_PLL_HSE_XTAL)
         /* 2- If fail try to start with HSE and external xtal */
         if (SetSysClock_PLL_HSE(0) == 0)
 #endif
         {
-#if ((CLOCK_SOURCE)&USE_PLL_HSI)
+#if ((CLOCK_SOURCE) & USE_PLL_HSI)
             /* 3- If fail start with HSI clock */
             if (SetSysClock_PLL_HSI() == 0)
 #endif
@@ -88,7 +88,7 @@ void SetSysClock(void)
     //HAL_RCC_MCOConfig(RCC_MCO2, RCC_MCO2SOURCE_SYSCLK, RCC_MCODIV_4);
 }
 
-#if (((CLOCK_SOURCE)&USE_PLL_HSE_XTAL) || ((CLOCK_SOURCE)&USE_PLL_HSE_EXTC))
+#if (((CLOCK_SOURCE) & USE_PLL_HSE_XTAL) || ((CLOCK_SOURCE) & USE_PLL_HSE_EXTC))
 /******************************************************************************/
 /*            PLL (clocked by HSE) used as System clock source                */
 /******************************************************************************/
@@ -112,17 +112,28 @@ uint8_t SetSysClock_PLL_HSE(uint8_t bypass)
         // Enable HSE oscillator and activate PLL with HSE as source
         RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
         if (bypass == 0) {
-            RCC_OscInitStruct.HSEState = RCC_HSE_ON; // External 8 MHz xtal on OSC_IN/OSC_OUT
+            RCC_OscInitStruct.HSEState = RCC_HSE_ON; // External 25/8 MHz xtal on OSC_IN/OSC_OUT
         } else {
-            RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS; // External 8 MHz clock on OSC_IN
+            RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS; // External 25/8 MHz clock on OSC_IN
         }
 
         RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
         RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+
+#if (HSE_VALUE == 8000000) // 8 MHz
         RCC_OscInitStruct.PLL.PLLM = 8; // VCO input clock = 1 MHz (8 MHz / 8)
         RCC_OscInitStruct.PLL.PLLN = 336; // VCO output clock = 336 MHz (1 MHz * 336)
         RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4; // PLLCLK = 84 MHz (336 MHz / 4)
         RCC_OscInitStruct.PLL.PLLQ = 7; // USB clock = 48 MHz (336 MHz / 7) --> OK for USB
+#elif (HSE_VALUE == 25000000) // 25 MHz
+        RCC_OscInitStruct.PLL.PLLM = 25; // VCO input clock = 1 MHz (25 MHz / 5)
+        RCC_OscInitStruct.PLL.PLLN = 336; // VCO output clock = 336 MHz (1 MHz * 336)
+        RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4; // PLLCLK = 84 MHz (336 MHz / 4)
+        RCC_OscInitStruct.PLL.PLLQ = 7; // USB clock = 48 MHz (336 MHz / 7) --> OK for USB#else  /* HSE_VALUE */
+#else  /* HSE_VALUE */
+#error Unsupported externall clock value, check HSE_VALUE define
+#endif /* HSE_VALUE */
+
         if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
             return 0; // FAIL
         }
@@ -150,7 +161,7 @@ uint8_t SetSysClock_PLL_HSE(uint8_t bypass)
 }
 #endif /* ((CLOCK_SOURCE) & USE_PLL_HSE_XTAL) || ((CLOCK_SOURCE) & USE_PLL_HSE_EXTC) */
 
-#if ((CLOCK_SOURCE)&USE_PLL_HSI)
+#if ((CLOCK_SOURCE) & USE_PLL_HSI)
 /******************************************************************************/
 /*            PLL (clocked by HSI) used as System clock source                */
 /******************************************************************************/
@@ -181,7 +192,8 @@ uint8_t SetSysClock_PLL_HSI(void)
     }
 
     /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 clocks dividers */
-    RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+    RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 |
+                                   RCC_CLOCKTYPE_PCLK2);
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK; // 84 MHz
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1; // 84 MHz
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2; // 42 MHz
