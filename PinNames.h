@@ -117,18 +117,19 @@ typedef enum {
 
     // STDIO for console print
 #ifdef MBED_CONF_TARGET_STDIO_UART_TX
-    STDIO_UART_TX = MBED_CONF_TARGET_STDIO_UART_TX,
+    CONSOLE_TX = MBED_CONF_TARGET_STDIO_UART_TX,
 #else
-    STDIO_UART_TX = PA_2,
+    CONSOLE_TX = PA_2,
 #endif
 #ifdef MBED_CONF_TARGET_STDIO_UART_RX
-    STDIO_UART_RX = MBED_CONF_TARGET_STDIO_UART_RX,
+    CONSOLE_RX = MBED_CONF_TARGET_STDIO_UART_RX,
 #else
-    STDIO_UART_RX = PA_3,
+    CONSOLE_RX = PA_3,
 #endif
 
-    USBTX = STDIO_UART_TX, // used for greentea tests
-    USBRX = STDIO_UART_RX, // used for greentea tests
+    // old STDIO pin names for backward compatibility
+    STDIO_UART_TX = CONSOLE_TX,
+    STDIO_UART_RX = CONSOLE_RX,
 
     // I2C signals aliases
     I2C_SDA = PB_6,
@@ -140,13 +141,9 @@ typedef enum {
     SPI_MISO = PA_6,
     SPI_SCK  = PA_5,
 
-    // Standardized LED and button names
-    LED1    = PC_13,
-    //BUTTON1 = NC, // the board have no user buttons
-
     // Backward legacy names
-    USER_BUTTON = NC,
-    //PWM_OUT = PB_5,
+    USER_BUTTON = PA_0,
+    PWM_OUT = D3,
 
     /**** USB FS pins ****/
     USB_OTG_FS_DM = PA_11,
@@ -169,6 +166,10 @@ typedef enum {
     SYS_JTRST = PB_4,
     SYS_WKUP = PA_0,
 } PinName;
+
+// Standardized LED and button names
+#define LED1     PC_13   // LD2 [Green Led]
+#define BUTTON1  PA_0  // B1 [Blue PushButton]
 
 #ifdef __cplusplus
 }

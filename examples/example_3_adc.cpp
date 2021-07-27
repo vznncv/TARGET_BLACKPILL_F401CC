@@ -1,12 +1,9 @@
 /**
  * BlackPill ADC usage demo.
- *
- * For this example you need a potentiometer (voltage divider), which output/signal pin is connected to PA_0.
  */
 #include "mbed.h"
 
 DigitalOut user_led(LED1, 1);
-AnalogIn user_analog_input(PA_0);
 
 /**
  * Helper STM32F4 specific function to calculate Vref voltage.
@@ -40,57 +37,23 @@ float read_mcu_temperature()
     temp_adc_lsb = ((int32_t)temp_adc_lsb * v_ref_mv) / TEMPSENSOR_CAL_VREFANALOG;
 
     // convert lsb temperature value to degree Celsius
-    temp_value = (float)((temp_adc_lsb - (int32_t)*TEMPSENSOR_CAL1_ADDR) * (TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP)) / (float)(*TEMPSENSOR_CAL2_ADDR - *TEMPSENSOR_CAL1_ADDR) + TEMPSENSOR_CAL1_TEMP;
+    temp_value =
+            (float)((temp_adc_lsb - (int32_t)*TEMPSENSOR_CAL1_ADDR) * (TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP)) /
+            (float)(*TEMPSENSOR_CAL2_ADDR - *TEMPSENSOR_CAL1_ADDR) + TEMPSENSOR_CAL1_TEMP;
 
     return temp_value;
 }
 
-/**
- * Helper function to get formatted float number for case if float number support for printf is disabled.
- */
-void format_fixed_float(char *buf, float f, int precision = 2)
-{
-    int integer_part = f;
-    int temp_digit;
-
-    // write integer part and point
-    buf += sprintf(buf, "%i.", integer_part);
-
-    // write fractional part
-    f -= integer_part;
-    for (int i = 0; i < precision; i++) {
-        f *= 10;
-        temp_digit = f;
-        f -= temp_digit;
-        *buf = temp_digit + '0';
-        buf++;
-    }
-    *buf = '\0';
-}
 
 int main()
 {
-    float v_ref;
     float temp;
-    float user_input;
-    char float_buf[16];
-
     printf("====== Start ======\n");
-
-    // adjust reference voltage of a user analog input
-    v_ref = calculate_reference_voltage();
-    user_analog_input.set_reference_voltage(v_ref);
 
     while (true) {
         // read and show current MCU temperature
         temp = read_mcu_temperature();
-        format_fixed_float(float_buf, temp, 1);
-        printf("MCU temperature:  %s C\n", float_buf);
-
-        // show pin of the user voltage
-        user_input = user_analog_input.read_voltage();
-        format_fixed_float(float_buf, user_input, 2);
-        printf("user pin voltage: %s V\n", float_buf);
+        printf("MCU temperature:  %.1f C\n", temp);
 
         // delay and led blinking
         user_led = 0;
