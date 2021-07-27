@@ -7,12 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+
 - Make MbedOS v6.12.0 as minimal supported version.
+- Set `default-adc-vref` to 3.3V.
 
 ### Added
+
 - Add support of `mbed-tools`.
 
 ### Fixed
+
 - Adjust target settings to use external clock oscillator.
 
 ## [0.1.1] - 2021-04-11
